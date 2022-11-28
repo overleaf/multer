@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.4.5-lts.1
+
+- No changes
+## 1.4.4-lts.1
+
+- Bugfix: Bump busboy to fix CVE-2022-24434 (#1097)
+- Breaking: Require Node.js 6.0.0 or later (#1097)
+
+## 1.4.4 - 2021-12-07
+
+- Bugfix: Handle missing field names (#913)
+- Docs: Add Vietnamese translation (#803)
+- Docs: Improve Spanish translation (#948)
+
+## 1.4.3 - 2021-08-09
+
+- Bugfix: Avoid deprecated pseudoRandomBytes function (#774)
+- Docs: Add Português Brazil translation for README (#758)
+- Docs: Clarify the callback calling convention (#775)
+- Docs: Add example on how to link to html multipart form (#580)
+- Docs: Add Spanish translation for README (#838)
+- Docs: Add Math.random() to storage filename example (#841)
+- Docs: Fix mistakes in russian doc (#869)
+- Docs: Improve Português Brazil translation (#877)
+- Docs: Update var to const in all Readmes (#1024)
+- Internal: Bump mkdirp version (#862)
+- Internal: Bump Standard version (#878)
+
+## 1.4.2 - 2019-07-16
+
+- Docs: Add Russian translation for README (#662)
+- Docs: Patch zh-CN README base on newest README (#670)
+- Docs: Fix broken link in Readme (#679)
+- Docs: Fix broken link in Chinese Readme (#730)
+- Docs: Fix typo in Russian README (#738)
+- Docs: Add unit for fieldSize in busboy limit params (#734)
+- Internal: Make unit tests comaptible with Node.js 13.x (#752)
+
 ## 1.4.1 - 2018-10-11
 
 - Bugfix: Make sure that req.file.buffer always is a Buffer
