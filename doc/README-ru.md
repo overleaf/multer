@@ -1,16 +1,19 @@
-# Multer [![Build Status](https://travis-ci.org/expressjs/multer.svg?branch=master)](https://travis-ci.org/expressjs/multer) [![NPM version](https://badge.fury.io/js/multer.svg)](https://badge.fury.io/js/multer) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
+# Multer [![NPM Version][npm-version-image]][npm-url] [![NPM Downloads][npm-downloads-image]][npm-url] [![Build Status][ci-image]][ci-url] [![Test Coverage][test-image]][test-url] [![OpenSSF Scorecard Badge][ossf-scorecard-badge]][ossf-scorecard-visualizer]
 
 Multer — это middleware для фреймворка express для обработки `multipart/form-data`, нужная в первую очередь при загрузке файлов. Написана как обертка над [busboy](https://github.com/mscdex/busboy) для ее максимально эффективного использования.
 
 **ВАЖНО**: Multer не обрабатывает никакой другой тип форм, кроме `multipart/form-data`.
 
-## Переводы 
+## Переводы
 
 Это README также доступно на других языках:
 
-- [English](https://github.com/expressjs/multer/blob/master/README.md) (Английский)
-- [简体中文](https://github.com/expressjs/multer/blob/master/doc/README-zh-cn.md) (Китайский)
-- [한국어](https://github.com/expressjs/multer/blob/master/doc/README-ko.md) (Корейский)
+- [العربية](https://github.com/expressjs/multer/blob/main/doc/README-ar.md) (арабский)
+- [English](https://github.com/expressjs/multer/blob/main/README.md) (Английский)
+- [Español](https://github.com/expressjs/multer/blob/main/doc/README-es.md) (Испанский)
+- [简体中文](https://github.com/expressjs/multer/blob/main/doc/README-zh-cn.md) (Китайский)
+- [한국어](https://github.com/expressjs/multer/blob/main/doc/README-ko.md) (Корейский)
+- [Português](https://github.com/expressjs/multer/blob/main/doc/README-pt-br.md) (бр Португальский)
 
 ## Установка
 
@@ -33,11 +36,11 @@ Multer добавляет объект `body` и объект `file` (или `fi
 ```
 
 ```javascript
-var express = require('express')
-var multer  = require('multer')
-var upload = multer({ dest: 'uploads/' })
+const express = require('express')
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
 
-var app = express()
+const app = express()
 
 app.post('/profile', upload.single('avatar'), function (req, res, next) {
   // req.file - файл `avatar`
@@ -49,8 +52,8 @@ app.post('/photos/upload', upload.array('photos', 12), function (req, res, next)
   // req.body сохранит текстовые поля, если они будут
 })
 
-var cpUpload = upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }])
-app.post('/cool-profile', cpUpload, function (req, res, next) {
+const uploadMiddleware = upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'gallery', maxCount: 8 }])
+app.post('/cool-profile', uploadMiddleware, function (req, res, next) {
   // req.files - объект (String -> Array), где fieldname - ключ, и значение - массив файлов
   //
   // например:
@@ -64,10 +67,10 @@ app.post('/cool-profile', cpUpload, function (req, res, next) {
 Если вам нужно обработать multipart-форму, содержащую только текст, используйте метод `.none()`:
 
 ```javascript
-var express = require('express')
-var app = express()
-var multer  = require('multer')
-var upload = multer()
+const express = require('express')
+const app = express()
+const multer  = require('multer')
+const upload = multer()
 
 app.post('/profile', upload.none(), function (req, res, next) {
   // req.body содержит текстовые поля
@@ -110,13 +113,13 @@ Multer принимает объект с опциями. Базовая опц�
 Обычно для веб-приложения нужно обязательно переопределить `dest`, как показано в примере ниже.
 
 ```javascript
-var upload = multer({ dest: 'uploads/' })
+const upload = multer({ dest: 'uploads/' })
 ```
 Если вам нужно больше возможностей для управления приложением, можно использовать `storage` вместо `dest`. Multer поставляется с двумя движками работы с памятью, `DiskStorage` и `MemoryStorage`, другие движки можно найти у сторонних разработчиков.
 
 #### `.single(fieldname)`
 
-Принимает один файо с именем `fieldname`. Файл будет сохранен в `req.file`.
+Принимает один файл с именем `fieldname`. Файл будет сохранен в `req.file`.
 
 #### `.array(fieldname[, maxCount])`
 
@@ -150,10 +153,10 @@ var upload = multer({ dest: 'uploads/' })
 
 #### `DiskStorage`
 
-Движок дискового пространства. Дает полный контроль над размещением файлов на диск. 
+Движок дискового пространства. Дает полный контроль над размещением файлов на диск.
 
 ```javascript
-var storage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, '/tmp/my-uploads')
   },
@@ -162,16 +165,16 @@ var storage = multer.diskStorage({
   }
 })
 
-var upload = multer({ storage: storage })
+const upload = multer({ storage: storage })
 ```
 
-Доступно две опции, расположение `destination` и имя файла `filename`. Обе эти функции определяют, где будет находиться файл после загрузки. 
+Доступно две опции, расположение `destination` и имя файла `filename`. Обе эти функции определяют, где будет находиться файл после загрузки.
 
 `destination` используется, чтобы задать каталог, в котором будут размещены файлы. Может быть задан строкой (например, `'/tmp/uploads'`). Если не задано расположение `destination`, операционная система воспользуется для сохранения каталогом для временных файлов.
 
-**Важно:** Вы должны создать каталог, когда используете `destination`. При передачи в качестве аргумента строки, Multer проверяет, что каталог создан. 
+**Важно:** Вы должны создать каталог, когда используете `destination`. При передачи в качестве аргумента строки, Multer проверяет, что каталог создан.
 
-`filename` используется, чтобы определить, как будет назван файл внутри каталога. Если 
+`filename` используется, чтобы определить, как будет назван файл внутри каталога. Если
 имя файла `filename` не задано, каждому файлу будет сконфигурировано случайное имя без расширения файла.
 
 **Важно:** Multer не добавляет никакого файлового расширения, ваша функция должна возвращать имя файла с необходимым расширением.
@@ -185,16 +188,16 @@ var upload = multer({ storage: storage })
 Движок оперативной памяти сохраняет файлы в памяти как объекты типа `Buffer`. В этом случае нет никаких дополнительных опций.
 
 ```javascript
-var storage = multer.memoryStorage()
-var upload = multer({ storage: storage })
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 ```
-Когда вы используете этот тип передачи, информация о файле будет содержать поле `buffer`, которое содержит весь файл. 
+Когда вы используете этот тип передачи, информация о файле будет содержать поле `buffer`, которое содержит весь файл.
 
 **ПРЕДУПРЕЖДЕНИЕ**: Загрузка очень больших файлов, или относительно небольших файлов в большом количестве может вызвать переполнение памяти.
 
 ### `limits`
 
-Объект, устанавливающий ограничения. Multer прокидывает этот объект напрямую в busboy, поэтому детали можно посмотреть 
+Объект, устанавливающий ограничения. Multer прокидывает этот объект напрямую в busboy, поэтому детали можно посмотреть
 [на странице с методами busboy](https://github.com/mscdex/busboy#busboy-methods).
 
 Доступны следующие целочисленные значения:
@@ -213,7 +216,7 @@ var upload = multer({ storage: storage })
 
 ### `fileFilter`
 
-Задает функцию для того, чтобы решать, какие файлы должны быть загружены, а какие — нет. Функция может выглядет так: 
+Задают функцию для того, чтобы решать, какие файлы будут загружены, а какие — нет. Функция может выглядеть так:
 
 ```javascript
 function fileFilter (req, file, cb) {
@@ -237,11 +240,11 @@ function fileFilter (req, file, cb) {
 
 Когда выбрасывается исключение, Multer делегирует его обработку Express. Вы можете выводить страницу ошибки [стандартными для express способами](http://expressjs.com/guide/error-handling.html).
 
-Если вы хотите отлавливать ошибки конкретно от Multer, вам нужно вызывать собственную middleware для их обработки. Еще, если вы хотите отлавливать [исключительно ошибки Multer](https://github.com/expressjs/multer/blob/master/lib/make-error.js#L1-L9), вы можете использовать класс `MulterError`, который привязан к объекту `multer` (например, `err instanceof multer.MulterError`)
+Если вы хотите отлавливать ошибки конкретно от Multer, вам нужно вызывать собственную middleware для их обработки. Еще, если вы хотите отлавливать [исключительно ошибки Multer](https://github.com/expressjs/multer/blob/main/lib/make-error.js#L1-L9), вы можете использовать класс `MulterError`, который привязан к объекту `multer` (например, `err instanceof multer.MulterError`)
 
 ```javascript
-var multer = require('multer')
-var upload = multer().single('avatar')
+const multer = require('multer')
+const upload = multer().single('avatar')
 
 app.post('/profile', function (req, res) {
   upload(req, res, function (err) {
@@ -258,8 +261,18 @@ app.post('/profile', function (req, res) {
 
 ## Собственные движки для сохранения файлов
 
-Чтобы получить информацию, как создать собственный движок для обработки загрузки файлов, смотрите страницу [Multer Storage Engine](https://github.com/expressjs/multer/blob/master/StorageEngine.md).
+Чтобы получить информацию, как создать собственный движок для обработки загрузки файлов, смотрите страницу [Multer Storage Engine](https://github.com/expressjs/multer/blob/main/StorageEngine.md).
 
 ## Лицензия
 
 [MIT](LICENSE)
+
+[ci-image]: https://github.com/expressjs/multer/actions/workflows/ci.yml/badge.svg
+[ci-url]: https://github.com/expressjs/multer/actions/workflows/ci.yml
+[test-url]: https://coveralls.io/r/expressjs/multer?branch=main
+[test-image]: https://badgen.net/coveralls/c/github/expressjs/multer/main
+[npm-downloads-image]: https://badgen.net/npm/dm/multer
+[npm-url]: https://npmjs.org/package/multer
+[npm-version-image]: https://badgen.net/npm/v/multer
+[ossf-scorecard-badge]: https://api.scorecard.dev/projects/github.com/expressjs/multer/badge
+[ossf-scorecard-visualizer]: https://ossf.github.io/scorecard-visualizer/#/projects/github.com/expressjs/multer

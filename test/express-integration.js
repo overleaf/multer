@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 var assert = require('assert')
+var http = require('http')
 
 var multer = require('../')
 var util = require('./_util')
@@ -8,7 +9,6 @@ var util = require('./_util')
 var express = require('express')
 var FormData = require('form-data')
 var concat = require('concat-stream')
-var onFinished = require('on-finished')
 
 var port = 34279
 
@@ -27,7 +27,7 @@ describe('Express Integration', function () {
     req.on('response', function (res) {
       res.on('error', cb)
       res.pipe(concat({ encoding: 'buffer' }, function (body) {
-        onFinished(req, function () { cb(null, res, body) })
+        cb(null, res, body)
       }))
     })
   }
@@ -49,7 +49,7 @@ describe('Express Integration', function () {
     })
 
     router.use(function (err, req, res, next) {
-      assert.equal(err.code, 'LIMIT_FILE_SIZE')
+      assert.strictEqual(err.code, 'LIMIT_FILE_SIZE')
 
       errorCalled++
       res.status(500).end('ERROR')
@@ -59,10 +59,10 @@ describe('Express Integration', function () {
     submitForm(form, '/t1/profile', function (err, res, body) {
       assert.ifError(err)
 
-      assert.equal(routeCalled, 0)
-      assert.equal(errorCalled, 1)
-      assert.equal(body.toString(), 'ERROR')
-      assert.equal(res.statusCode, 500)
+      assert.strictEqual(routeCalled, 0)
+      assert.strictEqual(errorCalled, 1)
+      assert.strictEqual(body.toString(), 'ERROR')
+      assert.strictEqual(res.statusCode, 500)
 
       done()
     })
@@ -88,7 +88,7 @@ describe('Express Integration', function () {
     })
 
     router.use(function (err, req, res, next) {
-      assert.equal(err.message, 'TEST')
+      assert.strictEqual(err.message, 'TEST')
 
       errorCalled++
       res.status(500).end('ERROR')
@@ -98,12 +98,102 @@ describe('Express Integration', function () {
     submitForm(form, '/t2/profile', function (err, res, body) {
       assert.ifError(err)
 
-      assert.equal(routeCalled, 0)
-      assert.equal(errorCalled, 1)
-      assert.equal(body.toString(), 'ERROR')
-      assert.equal(res.statusCode, 500)
+      assert.strictEqual(routeCalled, 0)
+      assert.strictEqual(errorCalled, 1)
+      assert.strictEqual(body.toString(), 'ERROR')
+      assert.strictEqual(res.statusCode, 500)
 
       done()
     })
+  })
+
+  it('should not crash on malformed request', function (done) {
+    var upload = multer()
+
+    app.post('/upload', upload.single('file'), function (req, res) {
+      res.status(500).end('Request should not be processed')
+    })
+
+    app.use(function (err, req, res, next) {
+      assert.strictEqual(err.message, 'Unexpected end of form')
+      res.status(200).end('Correct error')
+    })
+
+    var boundary = 'AaB03x'
+    var body = [
+      '--' + boundary,
+      'Content-Disposition: form-data; name="file"; filename="test.txt"',
+      'Content-Type: text/plain',
+      '',
+      'test without end boundary'
+    ].join('\r\n')
+    var options = {
+      hostname: 'localhost',
+      port,
+      path: '/upload',
+      method: 'POST',
+      headers: {
+        'content-type': 'multipart/form-data; boundary=' + boundary,
+        'content-length': body.length
+      }
+    }
+
+    var req = http.request(options, (res) => {
+      assert.strictEqual(res.statusCode, 200)
+      done()
+    })
+
+    req.on('error', (err) => {
+      done(err)
+    })
+
+    req.write(body)
+    req.end()
+  })
+
+  it('should not crash on malformed request that causes two errors to be emitted by busboy', function (done) {
+    var upload = multer()
+
+    app.post('/upload2', upload.single('file'), function (req, res) {
+      res.status(500).end('Request should not be processed')
+    })
+
+    app.use(function (err, req, res, next) {
+      assert.strictEqual(err.message, 'Malformed part header')
+      res.status(200).end('Correct error')
+    })
+
+    var boundary = 'AaB03x'
+    // this payload causes two errors to be emitted by busboy: `Malformed part header` and `Unexpected end of form`
+    var body = [
+      '--' + boundary,
+      'Content-Disposition: form-data; name="file"; filename="test.txt"',
+      'Content-Type: text/plain',
+      '',
+      '--' + boundary + '--',
+      ''
+    ].join('\r\n')
+    var options = {
+      hostname: 'localhost',
+      port,
+      path: '/upload2',
+      method: 'POST',
+      headers: {
+        'content-type': 'multipart/form-data; boundary=' + boundary,
+        'content-length': body.length
+      }
+    }
+
+    var req = http.request(options, (res) => {
+      assert.strictEqual(res.statusCode, 200)
+      done()
+    })
+
+    req.on('error', (err) => {
+      done(err)
+    })
+
+    req.write(body)
+    req.end()
   })
 })
