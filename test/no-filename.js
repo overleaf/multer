@@ -27,9 +27,9 @@ describe('File with no filename', function () {
     parser(req, null, function (err) {
       onFinished(req, function () {
         assert.ifError(err)
-        assert.equal(req.files.length, 1)
-        assert.equal(req.files[0].fieldname, 'fileField')
-        assert.equal(req.files[0].buffer.toString(), 'foo')
+        assert.strict.equal(req.files.length, 1)
+        assert.strict.equal(req.files[0].fieldname, 'fileField')
+        assert.strict.equal(req.files[0].buffer.toString(), 'foo')
         done()
       })
     })
